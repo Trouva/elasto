@@ -1,6 +1,6 @@
 var Elasto = require('./');
 
-Elasto.connect('http://localhost:9200/boulevard-development');
+Elasto.basePath = 'http://localhost:9200/boulevard-development';
 
 Elasto.query('boutiques')
         .where('name', 'London')
