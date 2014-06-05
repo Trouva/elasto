@@ -8,5 +8,8 @@
     "bluebird": "^1.2.4",
     "lodash": "^2.4.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "mocha": "^1.20.1",
+    "should": "^4.0.1"
+  }
 }
