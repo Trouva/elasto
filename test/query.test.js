@@ -15,7 +15,7 @@ describe('Elasto', function() {
 
     describe('find', function() {
 
-        xit('should find a specific item', function(done) {
+        it('should find a specific item', function(done) {
             var slug = product.boutique_slug;
 
             Elasto.query('boutiques')
@@ -31,7 +31,7 @@ describe('Elasto', function() {
 
         });
 
-        xit('should find a specific item with multiple params', function(done) {
+        it('should find a specific item with multiple params', function(done) {
             var boutique_slug = product.boutique_slug;
             var slug = product.slug;
 
@@ -48,7 +48,7 @@ describe('Elasto', function() {
             });
         });
 
-        xit('should request specific fields', function(done) {
+        it('should request specific fields', function(done) {
             var boutique_slug = product.boutique_slug;
             var slug = product.slug;
 
@@ -76,7 +76,7 @@ describe('Elasto', function() {
 
     describe('search', function() {
 
-        xit('should return a specific size of objects', function(done) {
+        it('should return a specific size of objects', function(done) {
             var size = 6;
 
             Elasto.query('products')
@@ -88,9 +88,7 @@ describe('Elasto', function() {
             });
         });
 
-
         it('should return a specific size of objects', function(done) {
-            var sort = 6;
             var boutique_slug = product.boutique_slug;
 
             Elasto.query('products')
@@ -107,7 +105,29 @@ describe('Elasto', function() {
                 }).forEach(function(doc, i){
                     doc.should.not.be.lessThan(previous);
                     previous = doc;
-                })
+                });
+
+                done();
+            });
+        });
+
+        it('should return objects in a certain location', function(done) {
+            var radius = 1.5;
+            Elasto.query('boutiques')
+            .near({
+                lat: 51.5,
+                lon: -0.1467912,
+                radius: radius
+            })
+            .search().then(function (documents){
+
+                documents.should.not.be.equal(undefined);
+
+                documents.forEach(function(doc){
+                    doc.sort.length.should.be.equal(1);
+                    doc.sort[0].should.be.lessThan(radius);
+                });
+
                 done();
             });
         });
