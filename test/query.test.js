@@ -12,59 +12,104 @@ var product = {
 };
 
 describe('Elasto', function() {
-  describe('find', function() {
 
-    xit('should find a specific item', function(done) {
-        var slug = product.boutique_slug;
+    describe('find', function() {
 
-        Elasto.query('boutiques')
-        .where('slug', slug)
-        .find().then(function (documents){
+        xit('should find a specific item', function(done) {
+            var slug = product.boutique_slug;
 
-            assert.equal(documents.length, 1);
-            documents.should.not.be.equal(undefined);
-            documents[0].slug.should.be.equal(slug);
+            Elasto.query('boutiques')
+            .where('slug', slug)
+            .find().then(function (documents){
 
-            done();
+                assert.equal(documents.length, 1);
+                documents.should.not.be.equal(undefined);
+                documents[0].slug.should.be.equal(slug);
+
+                done();
+            });
+
+        });
+
+        xit('should find a specific item with multiple params', function(done) {
+            var boutique_slug = product.boutique_slug;
+            var slug = product.slug;
+
+            Elasto.query('products')
+            .where(product)
+            .find().then(function (documents){
+
+                documents.length.should.be.equal(1);
+                documents.should.not.be.equal(undefined);
+                documents[0].slug.should.be.equal(slug);
+                documents[0].boutique_slug.should.be.equal(boutique_slug);
+
+                done();
+            });
+        });
+
+        xit('should request specific fields', function(done) {
+            var boutique_slug = product.boutique_slug;
+            var slug = product.slug;
+
+            Elasto.query('products')
+            .where(product)
+            .fields(['slug', 'name'])
+            .find().then(function (documents){
+
+                documents.length.should.be.equal(1);
+                documents.should.not.be.equal(undefined);
+                documents[0].slug.should.be.equal(slug);
+
+                var keys = _.keys(documents[0]);
+
+                keys.length.should.be.equal(2);
+
+                keys.indexOf('name').should.not.be.equal(-1);
+                keys.indexOf('slug').should.not.be.equal(-1);
+
+                done();
+            });
         });
 
     });
 
-    xit('should find a specific item with multiple params', function(done) {
-        var boutique_slug = product.boutique_slug;
-        var slug = product.slug;
+    describe('search', function() {
 
-        Elasto.query('products')
-        .where(product)
-        .find().then(function (documents){
+        xit('should return a specific size of objects', function(done) {
+            var size = 6;
 
-            documents.length.should.be.equal(1);
-            documents.should.not.be.equal(undefined);
-            documents[0].slug.should.be.equal(slug);
-            documents[0].boutique_slug.should.be.equal(boutique_slug);
+            Elasto.query('products')
+            .size(size)
+            .search().then(function (documents){
+                documents.should.not.be.equal(undefined);
+                documents.length.should.be.equal(size);
+                done();
+            });
+        });
 
-            done();
+
+        it('should return a specific size of objects', function(done) {
+            var sort = 6;
+            var boutique_slug = product.boutique_slug;
+
+            Elasto.query('products')
+            .where('boutique_slug', boutique_slug)
+            .sort('price')
+            .search().then(function (documents){
+
+                documents.should.not.be.equal(undefined);
+
+                var previous = 0;
+
+                documents.map(function(doc){
+                    return doc.price;
+                }).forEach(function(doc, i){
+                    doc.should.not.be.lessThan(previous);
+                    previous = doc;
+                })
+                done();
+            });
         });
     });
-
-    it('should request specific fields', function(done) {
-        var boutique_slug = product.boutique_slug;
-        var slug = product.slug;
-
-        Elasto.query('products')
-        .where(product)
-        .fields(['slug', 'name'])
-        .find().then(function (documents){
-
-            documents.length.should.be.equal(1);
-            documents.should.not.be.equal(undefined);
-
-            _.keys(documents[0]).length.should.be.equal(2);
-
-            documents[0].slug.should.be.equal(slug);
-
-            done();
-        });
-    });
-  });
 });
