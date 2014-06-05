@@ -7,6 +7,7 @@ Elasto.basePath = 'http://localhost:9200/boulevard-development';
 
 describe('Elasto', function() {
   describe('find', function() {
+
     it('should find a specific item', function(done) {
 
         Elasto.query('boutiques')
@@ -21,7 +22,22 @@ describe('Elasto', function() {
             done();
         });
 
-      // assert(foobar.sayHello() === 'funky chicken');
+    });
+
+    it('should find a specific item with multiple params', function(done) {
+
+        Elasto.query('products')
+        .where({
+            slug: 'cosi-homewares-in-n103hp',
+            boutique_slug: 'fig-tree-reed-diffuser-from-orla-kiely'
+        })
+        .find().then(function (documents){
+
+            documents.length.should.be.equal(1);
+            documents.should.not.be.equal(undefined);
+
+            done();
+        });
     });
   });
 });
