@@ -131,5 +131,33 @@ describe('Elasto', function() {
                 done();
             });
         });
+
+        it('should handle paging', function(done) {
+            var oldDocuments = [];
+
+            Elasto.query('boutiques')
+            .from(0)
+            .size(3)
+            .search().then(function (documents){
+
+                documents.should.not.be.equal(undefined);
+                documents.length.should.be.equal(3);
+
+                oldDocuments = documents;
+
+                Elasto.query('boutiques')
+                .from(1)
+                .size(1)
+                .search().then(function (docs){
+
+                    oldDocuments.filter(function(b){
+                        return docs[0].slug === b.slug;
+                    }).length.should.be.equal(1);
+
+                    done();
+                });
+
+            });
+        });
     });
 });
