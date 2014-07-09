@@ -1,17 +1,53 @@
 var assert = require("assert");
 var should = require("should");
 var _ = require('lodash');
-
+var request  = require('request');
+var Bluebird  = require('bluebird');
+var chance = require('chance')();
 var Elasto = require('../');
 
-Elasto.basePath = 'http://localhost:9200/boulevard-development';
-
-var product = {
-    slug: 'fig-tree-reed-diffuser-from-orla-kiely',
-    boutique_slug: 'cosi-homewares-in-n103hp'
-};
+Elasto.basePath = 'http://localhost:9200/circle_test';
 
 describe('Elasto', function() {
+    var productList = [];
+
+    before(function(done){
+
+        for (var i = 0; i < 20; i++) {
+            var slug = chance.word();
+            var boutique_slug = chance.word();
+            var boutique_slug = chance.word();
+            var price = chance.integer({min: 1, max: 2000});
+
+            productList.push({
+                slug: slug,
+                boutique_slug: boutique_slug,
+                price: price
+            });
+        }
+
+        var createNewProduct = function(newProduct){
+            var id = chance.integer({min: 1, max: 2000});
+            var productUrl = [Elasto.basePath, 'products', id].join('/'); // 1: index
+
+            return new Bluebird(function (resolve, reject) {
+                request({
+                    url: productUrl,
+                    method: 'PUT',
+                    json: newProduct
+                }, function (err, res, body) {
+                    if (err) return reject(err);
+                    resolve(body);
+                });
+            });
+        };
+
+        Bluebird.map(productList, function(product){
+            return createNewProduct(product);
+        }).then(function(res){
+            done();
+        });
+    });
 
     it('should set the mapping', function(done){
         var boutiqueMapping = {
@@ -20,6 +56,7 @@ describe('Elasto', function() {
                 'location' : { 'type' : 'geo_point' }
             }
         };
+
         Elasto.setMapping('boutiques', boutiqueMapping)
         .then(function(res){
             done();
@@ -95,20 +132,20 @@ describe('Elasto', function() {
             Elasto.query('products')
             .size(size)
             .search().then(function (documents){
+
                 documents.should.not.be.equal(undefined);
                 documents.length.should.be.equal(size);
                 done();
             });
         });
 
-        it('should return a specific size of objects', function(done) {
-            var boutique_slug = product.boutique_slug;
+        it('should return a specific size of objects with where', function(done) {
+            var boutique_slug = productList[0].boutique_slug;
 
             Elasto.query('products')
             .where('boutique_slug', boutique_slug)
             .sort('price')
             .search().then(function (documents){
-
                 documents.should.not.be.equal(undefined);
 
                 var previous = 0;
@@ -121,6 +158,9 @@ describe('Elasto', function() {
                 });
 
                 done();
+            })
+            .catch(function(err){
+                console.log(err);
             });
         });
 
