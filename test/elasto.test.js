@@ -10,121 +10,114 @@ Elasto.basePath = 'http://localhost:9200/circle_test';
 
 describe('Elasto', function() {
     var productList = [];
+    var createNewProduct;
 
     before(function(done){
-
-        for (var i = 0; i < 20; i++) {
-            var slug = chance.word();
-            var boutique_slug = chance.word();
-            var boutique_slug = chance.word();
-            var price = chance.integer({min: 1, max: 2000});
-
-            productList.push({
-                slug: slug,
-                boutique_slug: boutique_slug,
-                price: price
-            });
-        }
-
-        var createNewProduct = function(newProduct){
-            var id = chance.integer({min: 1, max: 2000});
-            var productUrl = [Elasto.basePath, 'products', id].join('/'); // 1: index
+        var deleteIndex = function(){
+            var productUrl = [Elasto.basePath, 'products'].join('/'); // 1: index
 
             return new Bluebird(function (resolve, reject) {
                 request({
                     url: productUrl,
-                    method: 'PUT',
-                    json: newProduct
+                    method: 'DELETE',
                 }, function (err, res, body) {
                     if (err) return reject(err);
-                    resolve(body);
+                    return resolve(body);
                 });
             });
         };
 
-        Bluebird.map(productList, function(product){
-            return createNewProduct(product);
-        }).then(function(res){
+        deleteIndex().then(function(res){
             done();
         });
     });
 
     it('should set the mapping', function(done){
-        var boutiqueMapping = {
+        var productMapping = {
             'properties': {
                 'slug': { 'type': 'string', 'index': 'not_analyzed' },
                 'location' : { 'type' : 'geo_point' }
             }
         };
 
-        Elasto.setMapping('boutiques', boutiqueMapping)
+        Elasto.setMapping('products', productMapping)
         .then(function(res){
             done();
         });
     });
 
-    describe('find', function() {
+    describe('save', function () {
 
-        xit('should find a specific item', function(done) {
-            var slug = product.boutique_slug;
+        it('should save a product', function (done) {
+            var slug = chance.word();
+            var boutique_slug = chance.word();
+            var price = chance.integer({min: 1, max: 2000});
+            var id = price;
+            var productToSave = {
+                slug: slug,
+                boutique_slug: boutique_slug,
+                price: price,
+                location: {
+                    lat: 51.5,
+                    lon: -0.1467912,
+                },
+                _id: id // Using price as _id
+            };
 
-            Elasto.query('boutiques')
-            .where('slug', slug)
-            .find().then(function (documents){
-                console.log('doc', documents);
-                assert.equal(documents.length, 1);
-                documents.should.not.be.equal(undefined);
-                documents[0].slug.should.be.equal(slug);
+            var product = Elasto.create('products').set(productToSave);
 
+            product.save()
+            .then(function(res){
+                return Elasto.query('products').byId(id);
+            })
+            .then(function(res){
+                res._id.should.be.equal(id);
                 done();
             });
 
         });
-
-        xit('should find a specific item with multiple params', function(done) {
-            var boutique_slug = product.boutique_slug;
-            var slug = product.slug;
-
-            Elasto.query('products')
-            .where(product)
-            .find().then(function (documents){
-
-                documents.length.should.be.equal(1);
-                documents.should.not.be.equal(undefined);
-                documents[0].slug.should.be.equal(slug);
-                documents[0].boutique_slug.should.be.equal(boutique_slug);
-
-                done();
-            });
-        });
-
-        xit('should request specific fields', function(done) {
-            var boutique_slug = product.boutique_slug;
-            var slug = product.slug;
-
-            Elasto.query('products')
-            .where(product)
-            .fields(['slug', 'name'])
-            .find().then(function (documents){
-
-                documents.length.should.be.equal(1);
-                documents.should.not.be.equal(undefined);
-                documents[0].slug.should.be.equal(slug);
-
-                var keys = _.keys(documents[0]);
-
-                keys.length.should.be.equal(2);
-
-                keys.indexOf('name').should.not.be.equal(-1);
-                keys.indexOf('slug').should.not.be.equal(-1);
-
-                done();
-            });
-        });
-
     });
 
     describe('search', function() {
+
+        before(function(done){
+
+            for (var i = 0; i < 20; i++) {
+                var slug = chance.word();
+                var boutique_slug = chance.word();
+                var price = chance.integer({min: 1, max: 2000});
+
+                productList.push({
+                    slug: slug,
+                    boutique_slug: boutique_slug,
+                    price: price
+                });
+            }
+
+            createNewProduct = function(newProduct){
+                var id = chance.integer({min: 1, max: 2000});
+                var productUrl = [Elasto.basePath, 'products', id].join('/'); // 1: index
+
+                return new Bluebird(function (resolve, reject) {
+                    request({
+                        url: productUrl,
+                        method: 'PUT',
+                        json: newProduct
+                    }, function (err, res, body) {
+                        if (err) return reject(err);
+                        return resolve(body);
+                    });
+                });
+            };
+
+            Bluebird.map(productList, function(product){
+                return createNewProduct(product);
+            }).then(function(res){
+                setTimeout(function(){
+                    done();
+                }, 1000); // The refresh rate of indexing is 1s by default
+            });
+        });
 
         it('should return a specific size of objects', function(done) {
             var size = 6;
@@ -166,7 +159,7 @@ describe('Elasto', function() {
 
         it('should return objects in a certain location', function(done) {
             var radius = 1.5;
-            Elasto.query('boutiques')
+            Elasto.query('products')
             .near({
                 lat: 51.5,
                 lon: -0.1467912,
@@ -185,10 +178,10 @@ describe('Elasto', function() {
             });
         });
 
-        xit('should handle paging', function(done) {
+        it('should handle paging', function(done) {
             var oldDocuments = [];
 
-            Elasto.query('boutiques')
+            Elasto.query('products')
             .from(0)
             .size(3)
             .search().then(function (documents){
@@ -198,7 +191,7 @@ describe('Elasto', function() {
 
                 oldDocuments = documents;
 
-                Elasto.query('boutiques')
+                Elasto.query('products')
                 .from(1)
                 .size(1)
                 .search().then(function (docs){

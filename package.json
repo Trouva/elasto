@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "ElasticSearch client",
   "main": "index",
+  "scripts": {
+    "test": "mocha test"
+  },
   "dependencies": {
     "request": "^2.36.0",
     "bluebird": "^1.2.4",
