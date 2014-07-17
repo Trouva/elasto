@@ -13,19 +13,7 @@ describe('Elasto', function() {
     var createNewProduct;
 
     before(function(done){
-        var deleteIndex = function(){
-            var indexUrl = Elasto.basePath // 1: index
 
-            return new Bluebird(function (resolve, reject) {
-                request({
-                    url: indexUrl,
-                    method: 'DELETE',
-                }, function (err, res, body) {
-                    if (err) return reject(err);
-                    return resolve(body);
-                });
-            });
-        };
         var indexSettings = {
             "settings": {
                 "number_of_shards": 1,
@@ -51,9 +39,9 @@ describe('Elasto', function() {
             }
         };
 
-        deleteIndex()
+        Elasto.deleteBasePathIndex()
         .then(function(){
-            return Elasto.createIndex(indexSettings);
+            return Elasto.createBasePathIndex(indexSettings);
         })
         .then(function(){
             done();
