@@ -14,11 +14,11 @@ describe('Elasto', function() {
 
     before(function(done){
         var deleteIndex = function(){
-            var productUrl = [Elasto.basePath, 'products'].join('/'); // 1: index
+            var indexUrl = Elasto.basePath // 1: index
 
             return new Bluebird(function (resolve, reject) {
                 request({
-                    url: productUrl,
+                    url: indexUrl,
                     method: 'DELETE',
                 }, function (err, res, body) {
                     if (err) return reject(err);
@@ -26,8 +26,36 @@ describe('Elasto', function() {
                 });
             });
         };
+        var indexSettings = {
+            "settings": {
+                "number_of_shards": 1,
+                "analysis": {
+                    "filter": {
+                        "autocomplete_filter": {
+                            "type": "edge_ngram",
+                            "min_gram": 1,
+                            "max_gram": 20
+                        }
+                    },
+                    "analyzer": {
+                        "autocomplete": {
+                            "type": "custom",
+                            "tokenizer": "standard",
+                            "filter": [
+                            "lowercase",
+                            "autocomplete_filter"
+                            ]
+                        }
+                    }
+                }
+            }
+        };
 
-        deleteIndex().then(function(res){
+        deleteIndex()
+        .then(function(){
+            return Elasto.createIndex(indexSettings);
+        })
+        .then(function(){
             done();
         });
     });
@@ -36,6 +64,11 @@ describe('Elasto', function() {
         var productMapping = {
             'properties': {
                 'slug': { 'type': 'string', 'index': 'not_analyzed' },
+                'name': {
+                    'type': 'string',
+                    'index_analyzer':  'autocomplete',
+                    'search_analyzer': 'standard'
+                },
                 'location' : { 'type' : 'geo_point' }
             }
         };
@@ -57,6 +90,7 @@ describe('Elasto', function() {
                 slug: slug,
                 boutique_slug: boutique_slug,
                 price: price,
+                name: chance.word(),
                 location: {
                     lat: 51.5,
                     lon: -0.1467912,
@@ -90,7 +124,12 @@ describe('Elasto', function() {
                 productList.push({
                     slug: slug,
                     boutique_slug: boutique_slug,
-                    price: price
+                    price: price,
+                    name: 'bro ' + chance.word(),
+                    location: {
+                        lat: 51.5,
+                        lon: -0.1467912,
+                    },
                 });
             }
 
@@ -166,7 +205,6 @@ describe('Elasto', function() {
                 radius: radius
             })
             .search().then(function (documents){
-
                 documents.should.not.be.equal(undefined);
 
                 documents.forEach(function(doc){
@@ -205,5 +243,20 @@ describe('Elasto', function() {
 
             });
         });
+
+        it('should autocomplete the search query', function(done){
+
+            Elasto.query('products').autocomplete('bro')
+            .then(function(res){
+                res.should.not.be.empty;
+                res.forEach(function(product){
+                    product.highlight.should.be.ok;
+                });
+
+                done();
+            });
+        });
     });
+
+
 });
