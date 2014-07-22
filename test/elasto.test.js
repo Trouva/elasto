@@ -244,6 +244,22 @@ describe('Elasto', function() {
                 done();
             });
         });
+
+        it('should get documents in a range', function (done) {
+
+            Elasto.query('products').range('price', [0, 1000])
+            .search()
+            .then(function(res){
+                res.should.not.be.empty;
+                res.forEach(function(product){
+                    product.price.should.be.lessThan(1000);
+                    product.price.should.be.greaterThan(0);
+                });
+                done();
+            });
+
+
+        });
     });
 
 
