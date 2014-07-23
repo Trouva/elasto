@@ -260,6 +260,15 @@ describe('Elasto', function() {
 
 
         });
+
+        it('should count a query', function (done) {
+            Elasto.query('products').count()
+            .then(function(count){
+                count.should.be.a.Number;
+                count.should.be.greaterThan(0);
+                done();
+            });
+        });
     });
 
 
