@@ -196,11 +196,36 @@ describe('Elasto', function() {
                 documents.should.not.be.equal(undefined);
 
                 documents.forEach(function(doc){
-                    doc.sort.length.should.be.equal(1);
-                    doc.sort[0].should.be.lessThan(radius);
+                    doc.location.lat.should.be.a.Number;
+                    doc.location.lon.should.be.a.Number;
                 });
 
                 done();
+            });
+        });
+
+        it('should return objects in a certain location and sort by distance', function(done) {
+            var radius = 1.5;
+            Elasto.query('products')
+            .near({
+                lat: 51.5,
+                lon: -0.1467912,
+                radius: radius
+            })
+            .sort('distance')
+            .search()
+            .then(function (documents){
+                documents.should.not.be.equal(undefined);
+
+                documents.forEach(function(doc){
+                    doc.location.lat.should.be.a.Number;
+                    doc.location.lon.should.be.a.Number;
+                });
+
+                done();
+            })
+            .catch(function(err){
+                console.log(err);
             });
         });
 
