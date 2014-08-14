@@ -39,9 +39,9 @@ describe('Elasto', function() {
             }
         };
 
-        Elasto.deleteBasePathIndex()
+        Elasto.deleteIndex()
         .then(function(){
-            return Elasto.createBasePathIndex(indexSettings);
+            return Elasto.createIndex(indexSettings);
         })
         .then(function(){
             done();
@@ -104,6 +104,8 @@ describe('Elasto', function() {
 
         before(function(done){
 
+            this.timeout(3000);
+
             for (var i = 0; i < 20; i++) {
                 var slug = chance.word();
                 var boutique_slug = chance.word();
@@ -142,7 +144,7 @@ describe('Elasto', function() {
             }).then(function(res){
                 setTimeout(function(){
                     done();
-                }, 1000); // The refresh rate of indexing is 1s by default
+                }, 1500); // The refresh rate of indexing is 1s by default
             });
         });
 
@@ -287,14 +289,39 @@ describe('Elasto', function() {
         });
 
         it('should count a query', function (done) {
-            Elasto.query('products').count()
-            .then(function(count){
+            Elasto.query('products').count().then(function(count){
                 count.should.be.a.Number;
                 count.should.be.greaterThan(0);
                 done();
             });
         });
+
+        it ('should delete one record by query', function (done) {
+            Elasto.query('products').count().then(function (count) { // get product count before delete
+                Elasto.query('products')
+                    .size(1)
+                    .search().then(function (docs) {
+                        var doc = docs[0];
+
+                        Elasto.query('products')
+                                .where('slug', doc.slug)
+                                .remove().then(function () {
+                                    Elasto.query('products').count().then(function (newCount) {
+                                        newCount.should.equal(count - 1);
+                                        done();
+                                    });
+                                });
+                    });
+            });
+        });
+
+        it ('should delete all records by query', function (done) {
+            Elasto.query('products').remove().then(function () {
+                Elasto.query('products').count().then(function (count) {
+                    count.should.equal(0);
+                    done();
+                });
+            });
+        });
     });
-
-
 });
