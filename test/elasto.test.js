@@ -297,7 +297,7 @@ describe('Elasto', function() {
         });
 
         it ('should delete one record by query', function (done) {
-            Elasto.query('products').count().then(function (count) { // get product count before delete
+            Elasto.query('products').count().then(function (oldCount) { // get product count before delete
                 Elasto.query('products')
                     .size(1)
                     .search().then(function (docs) {
@@ -307,7 +307,7 @@ describe('Elasto', function() {
                                 .where('slug', doc.slug)
                                 .remove().then(function () {
                                     Elasto.query('products').count().then(function (newCount) {
-                                        newCount.should.equal(count - 1);
+                                        newCount.should.equal(oldCount - 1);
                                         done();
                                     });
                                 });
@@ -315,11 +315,13 @@ describe('Elasto', function() {
             });
         });
 
-        it ('should delete all records by query', function (done) {
-            Elasto.query('products').remove().then(function () {
-                Elasto.query('products').count().then(function (count) {
-                    count.should.equal(0);
-                    done();
+        it ('should not delete all records if params are missing', function (done) {
+            Elasto.query('products').count().then(function (oldCount) {
+                Elasto.query('products').remove().then(function () {
+                    Elasto.query('products').count().then(function (newCount) {
+                        newCount.should.equal(oldCount);
+                        done();
+                    });
                 });
             });
         });
