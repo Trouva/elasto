@@ -4,7 +4,7 @@
   "description": "ElasticSearch client",
   "main": "index",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test"
+    "test": "./node_modules/.bin/mocha -R spec test"
   },
   "dependencies": {
     "request": "^2.36.0",

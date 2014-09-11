@@ -316,13 +316,36 @@ describe('Elasto', function() {
         });
 
         it ('should not delete all records if params are missing', function (done) {
-            Elasto.query('products').count().then(function (oldCount) {
-                Elasto.query('products').remove().then(function () {
-                    Elasto.query('products').count().then(function (newCount) {
+            Elasto.query('products').count()
+            .then(function (oldCount) {
+
+                Elasto.query('products').remove()
+                .catch(function noTerms() {
+
+                    Elasto.query('products').count()
+                    .then(function (newCount) {
                         newCount.should.equal(oldCount);
                         done();
                     });
+
                 });
+
+            });
+        });
+
+        it('should get multiple documents at once', function (done) {
+            var oldSlugs;
+
+            Elasto.query('products').size(5).search()
+            .then(function(docs) {
+                var oldSlugs = _.map(docs, 'slug');
+                return Elasto.query('products').where('slug', oldSlugs).search();
+            })
+            .then(function(docs) {
+                var newSlugs = _.map(docs, 'slug');
+
+                _.difference(oldSlugs, newSlugs).length.should.equal(0);
+                done();
             });
         });
     });
