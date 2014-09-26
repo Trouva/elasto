@@ -279,8 +279,8 @@ describe('Elasto', function() {
             .then(function(res){
                 res.should.not.be.empty;
                 res.forEach(function(product){
-                    product.price.should.be.lessThan(1000);
-                    product.price.should.be.greaterThan(0);
+                    product.price.should.be.lessThan(1001);
+                    product.price.should.be.greaterThan(-1);
                 });
                 done();
             });
