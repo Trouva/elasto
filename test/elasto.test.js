@@ -1,5 +1,7 @@
-var assert = require("assert");
-var should = require("should");
+var chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+var expect = chai.expect;
 var _ = require('lodash');
 var request  = require('request');
 var Bluebird  = require('bluebird');
@@ -43,9 +45,7 @@ describe('Elasto', function() {
         .then(function(){
             return Elasto.createIndex(indexSettings);
         })
-        .then(function(){
-            done();
-        });
+        .should.eventually.notify(done);
     });
 
     it('should set the mapping', function(done){
@@ -62,9 +62,7 @@ describe('Elasto', function() {
         };
 
         Elasto.setMapping('products', productMapping)
-        .then(function(res){
-            done();
-        });
+        .should.eventually.notify(done);
     });
 
     describe('save', function () {
@@ -94,8 +92,59 @@ describe('Elasto', function() {
             })
             .then(function(res){
                 res._id.should.be.equal(id);
-                done();
-            });
+            })
+            .should.eventually.notify(done);
+
+        });
+
+        it('should save a product with an external version', function (done) {
+            var slug = chance.word();
+            var boutique_slug = chance.word();
+            var price = chance.integer({min: 1, max: 2000});
+            var id = price;
+            var productToSave = {
+                slug: slug,
+                boutique_slug: boutique_slug,
+                price: price,
+                name: chance.word(),
+                location: {
+                    lat: 51.5,
+                    lon: -0.1467912,
+                },
+                _id: id // Using price as _id
+            };
+
+            var product = Elasto.create('products').set(productToSave);
+
+            product.version(1, 'external').save()
+            .then(function(res){
+                return Elasto.query('products').byId(id);
+            })
+            .then(function(res){
+                res._id.should.be.equal(id);
+            })
+            .then(function shouldFailWithVersionConflict(){
+                var product = Elasto.create('products').set(productToSave);
+                return product.version(1, 'external').save()
+                    .then(Bluebird.reject)
+                    .catch(function(err){
+                        expect(err.message).to.have.string('VersionConflictEngineException');
+                        return 'ok';
+                    });
+            })
+            .then(function shouldCommitWithHigherVersion(){
+                productToSave.name = '{["."]}';
+                var product = Elasto.create('products').set(productToSave);
+                return product.version(2, 'external').save();
+            })
+            .then(function(res){
+                return Elasto.query('products').byId(id);
+            })
+            .then(function(res){
+                res._id.should.be.equal(id);
+                res.name.should.be.equal('{["."]}');
+            })
+            .should.eventually.notify(done);
 
         });
     });
@@ -141,11 +190,10 @@ describe('Elasto', function() {
 
             Bluebird.map(productList, function(product){
                 return createNewProduct(product);
-            }).then(function(res){
-                setTimeout(function(){
-                    done();
-                }, 1500); // The refresh rate of indexing is 1s by default
-            });
+            })
+            // The refresh rate of indexing is 1s by default
+            .delay(1500)
+            .should.eventually.notify(done);
         });
 
         it('should return a specific size of objects', function(done) {
@@ -157,8 +205,8 @@ describe('Elasto', function() {
 
                 documents.should.not.be.equal(undefined);
                 documents.length.should.be.equal(size);
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should return a specific size of objects with where', function(done) {
@@ -179,11 +227,8 @@ describe('Elasto', function() {
                     previous = doc;
                 });
 
-                done();
             })
-            .catch(function(err){
-                console.log(err);
-            });
+            .should.eventually.notify(done);
         });
 
         it('should return objects in a certain location', function(done) {
@@ -201,9 +246,8 @@ describe('Elasto', function() {
                     doc.location.lat.should.be.a.Number;
                     doc.location.lon.should.be.a.Number;
                 });
-
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should return objects in a certain location and sort by distance', function(done) {
@@ -223,12 +267,8 @@ describe('Elasto', function() {
                     doc.location.lat.should.be.a.Number;
                     doc.location.lon.should.be.a.Number;
                 });
-
-                done();
             })
-            .catch(function(err){
-                console.log(err);
-            });
+            .should.eventually.notify(done);
         });
 
         it('should handle paging', function(done) {
@@ -244,7 +284,7 @@ describe('Elasto', function() {
 
                 oldDocuments = documents;
 
-                Elasto.query('products')
+                return Elasto.query('products')
                 .from(1)
                 .size(1)
                 .search().then(function (docs){
@@ -252,11 +292,10 @@ describe('Elasto', function() {
                     oldDocuments.filter(function(b){
                         return docs[0].slug === b.slug;
                     }).length.should.be.equal(1);
-
-                    done();
                 });
 
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should autocomplete the search query', function(done){
@@ -267,9 +306,8 @@ describe('Elasto', function() {
                 res.forEach(function(product){
                     product.highlight.should.be.ok;
                 });
-
-                done();
-            });
+            })
+            .should.eventually.notify(done);;
         });
 
         it('should get documents in a range', function (done) {
@@ -282,8 +320,8 @@ describe('Elasto', function() {
                     product.price.should.be.lessThan(1001);
                     product.price.should.be.greaterThan(-1);
                 });
-                done();
-            });
+            })
+            .should.eventually.notify(done);
 
 
         });
@@ -292,45 +330,49 @@ describe('Elasto', function() {
             Elasto.query('products').count().then(function(count){
                 count.should.be.a.Number;
                 count.should.be.greaterThan(0);
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it ('should delete one record by query', function (done) {
-            Elasto.query('products').count().then(function (oldCount) { // get product count before delete
-                Elasto.query('products')
+            var oldCount = 110;
+            Elasto.query('products').count()
+            .then(function (newOldCount) { // get product count before delete
+                oldCount = newOldCount;
+                return Elasto.query('products')
                     .size(1)
-                    .search().then(function (docs) {
-                        var doc = docs[0];
+                    .search()
+            })
+            .then(function (docs) {
+                var doc = docs[0];
 
-                        Elasto.query('products')
-                                .where('slug', doc.slug)
-                                .remove().then(function () {
-                                    Elasto.query('products').count().then(function (newCount) {
-                                        newCount.should.equal(oldCount - 1);
-                                        done();
-                                    });
-                                });
+                return Elasto.query('products')
+                    .where('slug', doc.slug)
+                    .remove();
+            })
+            .then(function () {
+                return Elasto.query('products').count()
+                    .then(function (newCount) {
+                        newCount.should.equal(oldCount - 1);
                     });
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it ('should not delete all records if params are missing', function (done) {
             Elasto.query('products').count()
             .then(function (oldCount) {
 
-                Elasto.query('products').remove()
+                return Elasto.query('products').remove()
+                .then(Bluebird.reject)
                 .catch(function noTerms() {
-
-                    Elasto.query('products').count()
-                    .then(function (newCount) {
-                        newCount.should.equal(oldCount);
-                        done();
-                    });
-
+                    return Elasto.query('products').count()
+                        .then(function (newCount) {
+                            newCount.should.equal(oldCount);
+                        });
                 });
-
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should get multiple documents at once', function (done) {
@@ -345,8 +387,8 @@ describe('Elasto', function() {
                 var newSlugs = _.map(docs, 'slug');
 
                 _.difference(oldSlugs, newSlugs).length.should.equal(0);
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
     });
 });

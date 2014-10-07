@@ -10,7 +10,9 @@
     "request": "^2.36.0",
     "bluebird": "^1.2.4",
     "lodash": "^2.4.1",
-    "chance": "^0.5.8"
+    "chance": "^0.5.8",
+    "chai": "^1.9.2",
+    "chai-as-promised": "^4.1.1"
   },
   "devDependencies": {
     "mocha": "^1.20.1",
