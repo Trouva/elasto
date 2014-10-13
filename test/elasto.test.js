@@ -392,11 +392,27 @@ describe('Elasto', function() {
         });
 
         it('should search with facets', function(done) {
+
             Elasto.query('products').facets('price', { "terms" : {"field" : "price"} })
             .search().then(function(facets) {
                 facets.price.terms.length.should.be.greaterThan(0);
                 done();
             });
         });
+
+        it('should do geodistance range', function(done) {
+
+            Elasto.query('products').range('distance', {
+                lat: 51.5,
+                lon: -0.1467912,
+                from: 0,
+                to: 1
+            })
+            .search()
+            .then(function(res) {
+                res.length.should.be.greaterThan(0);
+                done();
+            });
+        })
     });
 });
