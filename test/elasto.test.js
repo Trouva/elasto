@@ -390,5 +390,13 @@ describe('Elasto', function() {
             })
             .should.eventually.notify(done);
         });
+
+        it('should search with facets', function(done) {
+            Elasto.query('products').facets('price', { "terms" : {"field" : "price"} })
+            .search().then(function(facets) {
+                facets.price.terms.length.should.be.greaterThan(0);
+                done();
+            });
+        });
     });
 });
