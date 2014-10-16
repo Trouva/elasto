@@ -436,7 +436,9 @@ describe('Elasto', function() {
             })
             .search()
             .then(function(res) {
-
+                res.forEach(function(product){
+                    product.sort[0].should.be.ok;
+                });
                 done();
             });
         });
