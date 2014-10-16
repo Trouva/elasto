@@ -43,6 +43,7 @@ describe('Elasto', function() {
 
         Elasto.deleteIndex()
         .then(function(){
+            console.log('putain');
             return Elasto.createIndex(indexSettings);
         })
         .should.eventually.notify(done);
@@ -423,6 +424,19 @@ describe('Elasto', function() {
                     _.keys(product).length.should.equal(1);
                     product.name.should.be.ok;
                 })
+                done();
+            });
+        });
+
+        it('should sort by distance', function (done) {
+            Elasto.query('products')
+            .sort('distance', {
+                lat: 51,
+                lon: -0.14672,
+            })
+            .search()
+            .then(function(res) {
+
                 done();
             });
         });
