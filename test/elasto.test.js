@@ -413,6 +413,18 @@ describe('Elasto', function() {
                 res.length.should.be.greaterThan(0);
                 done();
             });
-        })
+        });
+
+        it('should query specific fields', function(done) {
+            Elasto.query('products').fields(['name'])
+            .search()
+            .then(function(res) {
+                res.forEach(function(product){
+                    _.keys(product).length.should.equal(1);
+                    product.name.should.be.ok;
+                })
+                done();
+            });
+        });
     });
 });
