@@ -9,6 +9,7 @@ var chance = require('chance')();
 var Elasto = require('../');
 
 Elasto.basePath = 'http://localhost:9200/circle_test';
+Elasto.DEBUG = true;
 
 describe('Elasto', function() {
     var productList = [];
@@ -43,7 +44,6 @@ describe('Elasto', function() {
 
         Elasto.deleteIndex()
         .then(function(){
-            console.log('putain');
             return Elasto.createIndex(indexSettings);
         })
         .should.eventually.notify(done);
@@ -442,5 +442,29 @@ describe('Elasto', function() {
                 done();
             });
         });
+
+        it('should exclude documents', function (done) {
+            var response = {};
+
+            Elasto.query('products')
+            .limit(10000)
+            .search()
+            .then(function(res) {
+                response.len = res.length;
+                response.excluded = res[0].slug;
+                return Elasto.query('products')
+                .limit(10000)
+                .not('slug', response.excluded)
+                .search();
+            })
+            .then(function(res) {
+                res.length.should.be.equal(response.len - 1);
+                res.forEach(function(product) {
+                    product.slug.should.not.be.equal(response.excluded);
+                });
+                done();
+            });
+        });
+
     });
 });
