@@ -335,7 +335,7 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
-        it ('should delete one record by query', function (done) {
+        it('should delete one record by query', function (done) {
             var oldCount = 110;
             Elasto.query('products').count()
             .then(function (newOldCount) { // get product count before delete
@@ -360,7 +360,7 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
-        it ('should not delete all records if params are missing', function (done) {
+        it('should not delete all records if params are missing', function (done) {
             Elasto.query('products').count()
             .then(function (oldCount) {
 
@@ -462,6 +462,35 @@ describe('Elasto', function() {
                 res.forEach(function(product) {
                     product.slug.should.not.be.equal(response.excluded);
                 });
+                done();
+            });
+        });
+
+        it('should do OR queries', function (done) {
+            var results;
+            var query;
+            Elasto.query('products')
+            .size(3)
+            .search()
+            .then(function(res) {
+                results = res;
+                query = {
+                    slug: res[0].slug,
+                    boutique_slug: res[1].boutique_slug,
+                    price: res[2].price
+                };
+
+                return Elasto.query('products')
+                .or(query)
+                .search();
+            })
+            .then(function(res) {
+                res.length.should.be.equal(3);
+                for(var field in query) {
+                    var find = {};
+                    find[field] = query[field];
+                    _.any(res, find).should.be.true;
+                }
                 done();
             });
         });
