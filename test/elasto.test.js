@@ -154,7 +154,7 @@ describe('Elasto', function() {
 
         before(function(done){
 
-            this.timeout(3000);
+            this.timeout(10000);
 
             for (var i = 0; i < 20; i++) {
                 var slug = chance.word();
@@ -193,7 +193,7 @@ describe('Elasto', function() {
                 return createNewProduct(product);
             })
             // The refresh rate of indexing is 1s by default
-            .delay(1500)
+            .delay(5000)
             .should.eventually.notify(done);
         });
 
