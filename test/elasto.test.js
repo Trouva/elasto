@@ -360,6 +360,71 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
+        it('should delete one record by query and external version', function (done) {
+            var oldCount = 110;
+
+            var slug = chance.word();
+            var boutique_slug = chance.word();
+            var price = chance.integer({min: 1, max: 2000});
+            var id = price;
+            var productToSave = {
+                slug: slug,
+                boutique_slug: boutique_slug,
+                price: price,
+                name: chance.word(),
+                location: {
+                    lat: 51.5,
+                    lon: -0.1467912,
+                },
+                _id: id // Using price as _id
+            };
+
+            var product = Elasto.create('products').set(productToSave);
+
+            var oldCount = 110;
+            Elasto.query('products').count()
+            .then(function (newOldCount) { // get product count before delete
+                oldCount = newOldCount;
+                return Elasto.query('products')
+                    .size(1)
+                    .search()
+            })
+            .then(function(){
+                return product.version(1, 'external').save();
+            })
+            .then(function(res){
+                return Elasto.query('products').byId(id);
+            })
+            .tap(function(res){
+                res._id.should.be.equal(id);
+            })
+            .tap(function shouldFailWithVersionConflict(doc){
+                 return Elasto.removeFrom('products')
+                    .byId(doc._id)
+                    .version(1, 'external')
+                    .remove()
+                    .then(Bluebird.reject.bind(null, new Error('nope')))
+                    .catch(function(err){
+                        expect(err.message).to.have.string('VersionConflictEngineException');
+                        return 'ok';
+                    });
+            })
+            .then(function shouldCommitWithHigherVersion(doc){
+                return Elasto.removeFrom('products')
+                    .byId(doc._id)
+                    .version(2, 'external')
+                    .remove();
+            })
+            .then(function () {
+                return Elasto.query('products').count()
+                    .then(function (newCount) {
+                        newCount.should.equal(oldCount);
+                    });
+            })
+            .should.eventually.notify(done);
+
+        });
+
         it('should not delete all records if params are missing', function (done) {
             Elasto.query('products').count()
             .then(function (oldCount) {
@@ -412,8 +477,8 @@ describe('Elasto', function() {
             .search()
             .then(function(res) {
                 res.length.should.be.greaterThan(0);
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should query specific fields', function(done) {
@@ -424,8 +489,8 @@ describe('Elasto', function() {
                     _.keys(product).length.should.equal(1);
                     product.name.should.be.ok;
                 })
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should sort by distance', function (done) {
@@ -439,8 +504,8 @@ describe('Elasto', function() {
                 res.forEach(function(product){
                     product.sort[0].should.be.ok;
                 });
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should exclude documents', function (done) {
@@ -462,8 +527,8 @@ describe('Elasto', function() {
                 res.forEach(function(product) {
                     product.slug.should.not.be.equal(response.excluded);
                 });
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
         it('should do OR queries', function (done) {
@@ -491,8 +556,8 @@ describe('Elasto', function() {
                     find[field] = query[field];
                     _.any(res, find).should.be.true;
                 }
-                done();
-            });
+            })
+            .should.eventually.notify(done);
         });
 
     });
