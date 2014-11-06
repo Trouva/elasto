@@ -342,11 +342,10 @@ describe('Elasto', function() {
                 oldCount = newOldCount;
                 return Elasto.query('products')
                     .size(1)
-                    .search()
+                    .search();
             })
             .then(function (docs) {
                 var doc = docs[0];
-
                 return Elasto.query('products')
                     .where('slug', doc.slug)
                     .remove();
@@ -463,6 +462,10 @@ describe('Elasto', function() {
             .search().then(function(facets) {
                 facets.price.terms.length.should.be.greaterThan(0);
                 done();
+            })
+            .catch(function(err) {
+                console.log(err);
+                done();
             });
         });
 
@@ -560,5 +563,43 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
+        it('should do OR and WHERE query', function (done) {
+            var products = [];
+            _.times(6, function(i) {
+                var name = 'lalala' + i%2; // have two types of names
+                products.push({
+                    name: name,
+                    value1: !!(i%2),
+                    value2: !(i%2),
+                    _id: chance.integer({min: 0})
+                });
+            });
+
+            Bluebird.map(products, function(product) {
+                var p = Elasto.create('products').set(product);
+                return p.save();
+            })
+            .delay(1200)
+            .then(function query() {
+                return Elasto.query('products')
+                .where('name', products[0].name)
+                .or({
+                    value1: true,
+                    value2: true,
+                })
+                .search();
+            })
+            .then(function(res) {
+                res.length.should.be.equal(3); // 3 because modulo 2
+                res.forEach(function(prod) {
+                    prod.name.should.be.equal(products[0].name);
+                });
+                done();
+            })
+            .catch(function(err) {
+                console.log(' err', JSON.stringify(err));
+                done();
+            });
+        });
     });
 });
