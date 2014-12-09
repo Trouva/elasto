@@ -11,37 +11,82 @@ Elasto.set('host', 'localhost:9200');
 
 describe('Elasto', function() {
 
-    it.only('should setup the index', function(done) {
-
-        var Tweet = Elasto.Model({
-            index: 'testing',
-            type: 'tweet'
-        });
-
-        Tweet.find()
-        .then(function(res) {
-            console.log('ressss', res);
-            done();
-        });
+    before(function cleanTestingIndex(done) {
+        Elasto.client.indices.delete({ index: 'testing'})
+        .finally(Elasto.client.indices.create({ index: 'testing' }))
+        .should.eventually.notify(done);
     });
 
-    it('should create a document', function(done) {
-        var Tweet = Elasto.Model({
-            index: 'testing',
-            type: 'tweet'
-        });
-        console.log(Tweet);
-        var instance = new Tweet({
-            name: chance.word()
+
+    describe('query DSL', function() {
+
+        var doc = function() {
+            return {
+                id: chance.natural({ min: 100000, max: 200000 }),
+                name: chance.word()
+            }
+        };
+
+        before(function(done) {
+            var promises = [];
+            _.times(30, function() {
+                var body = doc();
+                promises.push(Elasto.client.create({
+                    index: 'testing',
+                    type: 'tweets',
+                    id: body.id,
+                    body: body
+                }));
+            });
+
+            Bluebird.all(promises)
+            .should.eventually.notify(done);
         });
 
-        instance.save()
-        .then(function(doc) {
-            console.log(doc);
+        it('should find a document with a where query', function (done) {
+
+            var source = doc();
+
+            Elasto.client.create({
+                index: 'testing',
+                type: 'tweets',
+                refresh: true,
+                id: source.id,
+                body: source
+            })
+            .then(function() {
+                return Elasto.query({
+                    index: 'testing',
+                    type: 'tweets'
+                })
+                .where({ name: source.name })
+                .exec();
+            })
+            .then(function(res){
+                var data = res.hits.hits[0]._source;
+                source.id.should.equal(data.id);
+                source.name.should.equal(data.name);
+            })
+            .should.eventually.notify(done);
         });
 
+        it('should return a specific size of objects', function(done) {
+            var size = 6;
+
+            Elasto.query({
+                index: 'testing',
+                type: 'tweets'
+            })
+            .size(size)
+            .exec()
+            .then(function(data){
+                data.hits.hits.length.should.be.equal(size);
+            })
+            .should.eventually.notify(done);
+        });
 
     });
+
 });
 
 
