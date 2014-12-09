@@ -12,7 +12,9 @@
     "lodash": "^2.4.1",
     "chance": "^0.5.8",
     "chai": "^1.9.2",
-    "chai-as-promised": "^4.1.1"
+    "chai-as-promised": "^4.1.1",
+    "elasticsearch": "^3.0.1",
+    "jsclass": "^4.0.5"
   },
   "devDependencies": {
     "mocha": "^1.20.1",
