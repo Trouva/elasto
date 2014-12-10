@@ -243,6 +243,6 @@ Elasto.query({
 ### Contributors
 
 * [Arnaud Benard](github.com/arnaudbenard)
-* [Vadim Demes](https://github.com/vdemedes)
+* [Vadim Demedes](https://github.com/vdemedes)
 * [Peter Kadlot](github.com/daralthus)
 * [Alex Loizou](github.com/alexloi)
