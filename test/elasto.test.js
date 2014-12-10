@@ -10,7 +10,7 @@ var Elasto = require('../');
 Elasto.config({
     host: 'localhost:9200',
     // log: 'trace',
-    apiVersion: '0.90'
+    // apiVersion: '0.90'
 });
 
 describe('Elasto', function() {
