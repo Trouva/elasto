@@ -2,7 +2,6 @@
 ## Introduction
 
 Elasto is a simple library to query Elasticsearch.
-[Documentation](http://streethub.github.io/elasto/)
 
 ## Topics
 - [Installation](#installation)
@@ -20,12 +19,16 @@ npm install elasto
 
 ## Getting started
 
+More infos about the config options [here](http://www.elasticsearch.org/guide/en/elasticsearch/client/javascript-api/current/configuration.html).
 ```javascript
 var Elasto = require('elasto');
 Elasto.config({
     host: 'localhost:9200',
 });
 ```
+
+Elasto provides a simple query interface for the common usecases. You can have access to the [elasticsearch.js](http://www.elasticsearch.org/guide/en/elasticsearch/client/javascript-api/current/index.html) client via `Elasto.client`.
+The client gets instantiated when you set the config with a host.
 
 ## Example
 
@@ -43,14 +46,14 @@ Elasto.query({
 .where('name', 'London') // where name matches London
 .size(2) // return only 2 documents
 .from(1) // skip 1 document (searching after 1 document)
-.returns('name', 'address') // return only name and address fields
+.fields('name', 'address') // return only name and address fields
 .exec()
 .then(function (res) { // execute
    // done!
 });
 ```
 
-### API
+## API
 
 ### Basic query
 
