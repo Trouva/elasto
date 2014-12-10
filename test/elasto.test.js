@@ -8,7 +8,7 @@ var Bluebird  = require('bluebird');
 var chance = require('chance')();
 var Elasto = require('../');
 Elasto.config({
-    host: 'localhost:9200',
+    host: '127.0.0.1',
     // log: 'trace',
     // apiVersion: '0.90'
 });
