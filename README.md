@@ -22,23 +22,23 @@ Elasto.config({
 ## All-in-one example
 
 ```javascript
-      Elasto.query({
-            index: 'development',
-            type: 'tweets'
-      })
-      .near({ // documents near this location
-          lat: 51.5,
-          lon: -0.1467912,
-          radius: 3
-      })
-      .where('name', 'London') // where name matches London
-      .size(2) // return only 2 documents
-      .from(1) // skip 1 document (searching after 1 document)
-      .returns('name', 'address') // return only name and address fields
-      .exec()
-      .then(function (res) { // execute
-         // done! 
-      });
+Elasto.query({
+      index: 'development',
+      type: 'tweets'
+})
+.near({ // documents near this location
+    lat: 51.5,
+    lon: -0.1467912,
+    radius: 3
+})
+.where('name', 'London') // where name matches London
+.size(2) // return only 2 documents
+.from(1) // skip 1 document (searching after 1 document)
+.returns('name', 'address') // return only name and address fields
+.exec()
+.then(function (res) { // execute
+   // done! 
+});
 ```
 
 
