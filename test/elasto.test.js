@@ -9,7 +9,8 @@ var chance = require('chance')();
 var Elasto = require('../');
 Elasto.config({
     host: 'localhost:9200',
-    // log: 'trace'
+    // log: 'trace',
+    apiVersion: '0.90'
 });
 
 describe('Elasto', function() {
@@ -50,7 +51,8 @@ describe('Elasto', function() {
                 id: chance.natural({ min: 100000, max: 200000 }),
                 name: chance.word(),
                 characters: chance.integer({min: 1, max: 150}),
-                location: { lat: lat, lon: lon}
+                location: { lat: lat, lon: lon},
+                description: 'twitty tweet' //leave static
             }
         };
 
@@ -290,6 +292,33 @@ describe('Elasto', function() {
             })
             .should.eventually.notify(done);
         });
+
+        it('should find with a term', function(done) {
+
+            Elasto.query({
+                index: 'testing',
+                type: 'tweets'
+            })
+            .exec()
+            .then(function(res) {
+                var docs = _.pluck(res.hits.hits, '_source');
+                return Bluebird.props({
+                    docs: Elasto.query({
+                         index: 'testing',
+                         type: 'tweets'
+                        })
+                        .term(docs[0].name)
+                        .exec(),
+                    term: Bluebird.resolve(docs[0].name)
+                });
+            })
+            .then(function(opts) {
+                var docs = _.pluck(opts.docs.hits.hits, '_source');
+                docs[0].name.should.be.equal(opts.term);
+            })
+            .should.eventually.notify(done);
+        });
+
     });
 });
 

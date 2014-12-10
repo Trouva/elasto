@@ -86,7 +86,22 @@ Elasto.query({
     index: 'development',
     type: 'tweets'
 })
-.where('username', '@jack'})
+.where('username', '@jack')
+.exec();
+```
+
+### Term
+
+- `.term`
+
+Search a term.
+
+```javascript
+Elasto.query({
+    index: 'development',
+    type: 'tweets'
+})
+.term('#love')
 .exec();
 ```
 
