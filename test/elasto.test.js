@@ -1,3 +1,5 @@
+'use strict';
+
 var chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
@@ -8,9 +10,9 @@ var Bluebird  = require('bluebird');
 var chance = require('chance')();
 var Elasto = require('../');
 Elasto.config({
-    host: '127.0.0.1',
+    host: 'localhost:9200',
     // log: 'trace',
-    // apiVersion: '0.90'
+    apiVersion: '0.90'
 });
 
 describe('Elasto', function() {
@@ -28,15 +30,24 @@ describe('Elasto', function() {
             }
         };
 
-        Elasto.client.indices.delete({ index: 'testing'})
-        .then(Elasto.client.indices.create({ index: 'testing' }))
-        .then(Elasto.client.indices.putMapping({
-            index: 'testing',
-            type: 'tweets',
-            body: {
-                tweets: mapping
-            }
-        }))
+        Elasto.client.indices.exists({ index: 'testing'})
+        .then(function(exists) {
+            var deleteIndex = Elasto.client.indices.delete({ index: 'testing'});
+            return exists ? deleteIndex : '';
+        })
+        .delay(1000) // small delay to set mapping
+        .then(function(){
+            return Elasto.client.indices.create({ index: 'testing' });
+        })
+        .then(function(){
+            return Elasto.client.indices.putMapping({
+                index: 'testing',
+                type: 'tweets',
+                body: {
+                    tweets: mapping
+                }
+            });
+        })
         .delay(1000) // small delay to set mapping
         .should.eventually.notify(done);
     });
