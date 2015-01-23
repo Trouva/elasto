@@ -1,0 +1,5 @@
+machine:
+  node:
+    version: v0.10.26
+  services:
+    - elasticsearch
