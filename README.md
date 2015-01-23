@@ -58,7 +58,7 @@ Elasto.query({
 ### Basic query
 
 ```javascript
-return Elasto.query({
+Elasto.query({
     index: 'development',
     type: 'tweets'
 })
@@ -257,7 +257,7 @@ Elasto.query({
 
 ### Contributors
 
-* [Arnaud Benard](github.com/arnaudbenard)
+* [Arnaud Benard](https://github.com/arnaudbenard)
 * [Vadim Demedes](https://github.com/vdemedes)
-* [Peter Kadlot](github.com/daralthus)
-* [Alex Loizou](github.com/alexloi)
+* [Peter Kadlot](https://github.com/daralthus)
+* [Alex Loizou](https://github.com/alexloi)
