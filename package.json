@@ -1,22 +1,20 @@
 {
   "name": "elasto",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ElasticSearch client",
   "main": "index",
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec test"
   },
   "dependencies": {
-    "request": "^2.36.0",
-    "bluebird": "^1.2.4",
-    "lodash": "^2.4.1",
-    "chance": "^0.5.8",
-    "chai": "^1.9.2",
-    "chai-as-promised": "^4.1.1",
-    "elasticsearch": "^3.0.1",
-    "jsclass": "^4.0.5"
+    "elasticsearch": "^3.0.1"
   },
   "devDependencies": {
+    "bluebird": "^2.9.1",
+    "chai": "^1.9.2",
+    "chai-as-promised": "^4.1.1",
+    "chance": "^0.5.8",
+    "lodash": "^2.4.1",
     "mocha": "^1.20.1",
     "should": "^4.0.1"
   }
