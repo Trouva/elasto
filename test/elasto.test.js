@@ -1,3 +1,5 @@
+'use strict';
+
 var chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
@@ -598,6 +600,30 @@ describe('Elasto', function() {
             })
             .catch(function(err) {
                 console.log(' err', JSON.stringify(err));
+                done();
+            });
+        });
+
+        it('should list aliases', function(done) {
+
+            Elasto.getAliases()
+            .then(function(aliases) {
+                var keys = _.keys(aliases);
+                _.contains(keys, 'circle_test').should.be.equal(true);
+                done();
+            });
+
+        });
+
+        it('should create an alias', function(done) {
+            var alias = chance.word();
+            Elasto.setAlias('circle_test', alias)
+            .then(function(res) {
+                return Elasto.getAliases();
+            })
+            .then(function(res) {
+                var aliases = _.keys(res.circle_test.aliases);
+                _.contains(aliases, alias).should.be.equal(true);
                 done();
             });
         });
