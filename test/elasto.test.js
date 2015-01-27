@@ -627,5 +627,26 @@ describe('Elasto', function() {
                 done();
             });
         });
+
+        it('should delete an alias', function(done) {
+            var alias = chance.word();
+            Elasto.setAlias('circle_test', alias)
+            .then(function(res) {
+                return Elasto.getAliases();
+            })
+            .then(function(res) {
+                var aliases = _.keys(res.circle_test.aliases);
+                _.contains(aliases, alias).should.be.equal(true);
+                return Elasto.removeAlias('circle_test', alias);
+            })
+            .then(function(res) {
+                return Elasto.getAliases();
+            })
+            .then(function(res) {
+                 var aliases = _.keys(res.circle_test.aliases);
+                _.contains(aliases, alias).should.be.equal(false);
+                done();
+            });
+        });
     });
 });
