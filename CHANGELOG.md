@@ -2,6 +2,6 @@
 
 Fixes:
 
-- Remove unused dependencies
+- Removed unused dependencies
 - Put dependencies for testing in devDependencies
-- Removed lodash methods with vanilla JS
+- Replaced lodash methods with vanilla JS
