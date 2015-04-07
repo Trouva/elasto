@@ -7,8 +7,8 @@
     "test": "./node_modules/.bin/mocha -R spec test"
   },
   "dependencies": {
-    "elasticsearch": "^3.0.1",
-    "isarray": "0.0.1"
+    "isarray": "0.0.1",
+    "elasticsearch": "^4.0.2"
   },
   "devDependencies": {
     "bluebird": "^2.9.1",
