@@ -270,6 +270,23 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
+        it('should query specific fields (no array)', function(done) {
+
+            Elasto.query({
+                index: 'testing',
+                type: 'tweets'
+            })
+            .fields('name', 'id')
+            .exec()
+            .then(function(res) {
+                var docs = _.pluck(res.hits.hits, 'fields');
+                docs.forEach(function(doc){
+                    _.keys(doc).length.should.equal(2);
+                })
+            })
+            .should.eventually.notify(done);
+        });
+
         it('should exclude documents', function (done) {
             var response = {};
 
