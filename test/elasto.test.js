@@ -329,6 +329,18 @@ describe('Elasto', function() {
             .should.eventually.notify(done);
         });
 
+        it('should count documents', function(done) {
+            Elasto.query({
+                index: 'testing',
+                type: 'tweets'
+            })
+            .count()
+            .then(function(res) {
+                res.count.should.be.greaterThan(0);
+            })
+            .should.eventually.notify(done);
+
+        });
     });
 });
 

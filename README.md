@@ -252,6 +252,18 @@ Elasto.query({
 .exec();
 ```
 
+### Count
+
+Count documents based on a query
+
+```javascript
+Elasto.query({
+    index: 'development',
+    type: 'tweets'
+})
+.count();
+```
+
 ### License
 `elasto` is released under the MIT license. See `LICENSE.txt` for the complete text.
 
