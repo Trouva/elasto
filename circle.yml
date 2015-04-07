@@ -1,5 +1,9 @@
 machine:
   node:
     version: v0.10.26
-  services:
-    - elasticsearch
+dependencies:
+  cache_directories:
+    - elasticsearch-1.5.0 # relative to the build directory
+  post:
+    - if [[ ! -e elasticsearch-1.5.0 ]]; then wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.5.0.tar.gz && tar -xvf elasticsearch-1.5.0.tar.gz; fi
+    - elasticsearch-1.5.0/bin/elasticsearch: {background: true}
