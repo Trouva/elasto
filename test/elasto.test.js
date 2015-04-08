@@ -15,6 +15,7 @@ Elasto.config({
 });
 
 var CIRCLECI = process.env.CIRCLECI === "true";
+console.log('Executing test on', CIRCLECI ? 'CircleCI' : 'local');
 
 describe('Elasto', function() {
 
@@ -24,7 +25,6 @@ describe('Elasto', function() {
     };
 
     before(function cleanTestingIndex(done) {
-
         var mapping = {
             'properties': {
                 'location' : { 'type' : 'geo_point' }
@@ -32,7 +32,7 @@ describe('Elasto', function() {
         };
 
         // Circle ci takes a few seconds to start the elasticsearch service
-        Bluebird.resolve().delay(CIRCLECI ? 3000 : 0)
+        Bluebird.resolve().delay(CIRCLECI ? 10000 : 0)
         .then(function() {
             return Elasto.client.indices.exists({ index: 'circle_test'});
         })
