@@ -6,6 +6,13 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec test"
   },
+  "keywords": [
+    "elasticsearch",
+    "elatic",
+    "database",
+    "query",
+    "search"
+  ],
   "dependencies": {
     "isarray": "0.0.1",
     "elasticsearch": "^4.0.2"
