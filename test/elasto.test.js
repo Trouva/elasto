@@ -25,6 +25,8 @@ describe('Elasto', function() {
     };
 
     before(function cleanTestingIndex(done) {
+        this.timeout(60000);
+
         var mapping = {
             'properties': {
                 'location' : { 'type' : 'geo_point' }
