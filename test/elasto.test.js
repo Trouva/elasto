@@ -14,6 +14,8 @@ Elasto.config({
     apiVersion: '1.5'
 });
 
+var CIRCLECI = process.env.CIRCLECI === "true";
+
 describe('Elasto', function() {
 
     var london =  {
@@ -29,18 +31,22 @@ describe('Elasto', function() {
             }
         };
 
-        Elasto.client.indices.exists({ index: 'testing'})
+        // Circle ci takes a few seconds to start the elasticsearch service
+        Bluebird.resolve().delay(CIRCLECI ? 3000 : 0)
+        .then(function() {
+            return Elasto.client.indices.exists({ index: 'circle_test'});
+        })
         .then(function(exists) {
-            var deleteIndex = Elasto.client.indices.delete({ index: 'testing'});
+            var deleteIndex = Elasto.client.indices.delete({ index: 'circle_test'});
             return exists ? deleteIndex : '';
         })
         .delay(1000) // small delay to set mapping
         .then(function(){
-            return Elasto.client.indices.create({ index: 'testing' });
+            return Elasto.client.indices.create({ index: 'circle_test' });
         })
         .then(function(){
             return Elasto.client.indices.putMapping({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets',
                 body: {
                     tweets: mapping
@@ -71,7 +77,7 @@ describe('Elasto', function() {
             _.times(30, function() {
                 var body = doc();
                 promises.push(Elasto.client.create({
-                    index: 'testing',
+                    index: 'circle_test',
                     type: 'tweets',
                     refresh: true,
                     id: body.id,
@@ -88,7 +94,7 @@ describe('Elasto', function() {
             var source = doc();
 
             Elasto.client.create({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets',
                 refresh: true,
                 id: source.id,
@@ -96,7 +102,7 @@ describe('Elasto', function() {
             })
             .then(function() {
                 return Elasto.query({
-                    index: 'testing',
+                    index: 'circle_test',
                     type: 'tweets'
                 })
                 .where({ name: source.name })
@@ -114,7 +120,7 @@ describe('Elasto', function() {
             var size = 6;
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .size(size)
@@ -128,7 +134,7 @@ describe('Elasto', function() {
         it('should sort documents', function (done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .sort('characters')
@@ -150,7 +156,7 @@ describe('Elasto', function() {
         it('should find documents in a location with a radius', function (done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .near(_.extend(london, { radius: 10 }))
@@ -170,7 +176,7 @@ describe('Elasto', function() {
             var old = [];
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .from(0)
@@ -184,7 +190,7 @@ describe('Elasto', function() {
                 old = docs;
 
                 return Elasto.query({
-                    index: 'testing',
+                    index: 'circle_test',
                     type: 'tweets'
                 })
                 .from(1)
@@ -202,7 +208,7 @@ describe('Elasto', function() {
         it('should get documents in a range', function (done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .range('characters', [120, 150])
@@ -220,7 +226,7 @@ describe('Elasto', function() {
         it('should get documents in a geodistance range', function(done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .range('distance', _.extend(london, {from: 0, to: 100}))
@@ -237,7 +243,7 @@ describe('Elasto', function() {
             var radius = 5;
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .near(_.extend(london, { radius: radius }))
@@ -256,7 +262,7 @@ describe('Elasto', function() {
         it('should query specific fields', function(done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .fields(['name', 'id'])
@@ -273,7 +279,7 @@ describe('Elasto', function() {
         it('should query specific fields (no array)', function(done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .fields('name', 'id')
@@ -291,7 +297,7 @@ describe('Elasto', function() {
             var response = {};
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .size(10000)
@@ -303,7 +309,7 @@ describe('Elasto', function() {
                 response.excluded = docs[0].name;
 
                 return Elasto.query({
-                    index: 'testing',
+                    index: 'circle_test',
                     type: 'tweets'
                 })
                 .size(10000)
@@ -323,7 +329,7 @@ describe('Elasto', function() {
         it('should find with a term', function(done) {
 
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .exec()
@@ -331,7 +337,7 @@ describe('Elasto', function() {
                 var docs = _.pluck(res.hits.hits, '_source');
                 return Bluebird.props({
                     docs: Elasto.query({
-                         index: 'testing',
+                         index: 'circle_test',
                          type: 'tweets'
                         })
                         .term(docs[0].name)
@@ -348,7 +354,7 @@ describe('Elasto', function() {
 
         it('should count documents', function(done) {
             Elasto.query({
-                index: 'testing',
+                index: 'circle_test',
                 type: 'tweets'
             })
             .count()
