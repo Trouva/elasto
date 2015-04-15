@@ -5,6 +5,7 @@ Elasto is a simple library to query Elasticsearch.
 
 ## Topics
 - [Installation](#installation)
+- [Support](#support)
 - [Getting started](#getting-started)
 - [Example](#example)
 - [API](#api)
@@ -16,6 +17,10 @@ Elasto is a simple library to query Elasticsearch.
 ```bash
 npm install elasto
 ```
+
+## Support
+
+If you want to use this package with Elasticsearch 0.90, you should use `1.1.2`. The versions `>=2.X.X` will only support Elasticsearch `1.X.X`.
 
 ## Getting started
 
