@@ -269,6 +269,23 @@ Elasto.query({
 .count();
 ```
 
+### Raw ElasticSearch Query
+
+Returns the raw ElasticSearch computed by Elasto. You can directly use that object with the ElasticSearch node library (that's how Elasto is designed).
+Takes `search` or `count` as argument. If empty, the raw query will be `search`.
+
+```javascript
+Elasto.query({
+    index: 'development',
+    type: 'tweets'
+})
+.raw(); 
+// Returns Object
+// -> { index: 'development',
+//  type: 'tweets',
+//  body: { query: { filtered: [Object] } } }
+```
+
 ### License
 `elasto` is released under the MIT license. See `LICENSE.txt` for the complete text.
 
