@@ -1,9 +1,6 @@
-'use strict';
-
 var chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
-var expect = chai.expect;
 var _ = require('lodash');
 var Bluebird  = require('bluebird');
 var chance = require('chance')();
@@ -71,7 +68,7 @@ describe('Elasto', function() {
                 characters: chance.integer({min: 1, max: 150}),
                 location: { lat: lat, lon: lon},
                 description: 'twitty tweet' //leave static
-            }
+            };
         };
 
         before(function(done) {
@@ -147,7 +144,7 @@ describe('Elasto', function() {
                 res.hits.hits.map(function(doc){
                     return doc._source.characters;
                 })
-                .forEach(function(value, i){
+                .forEach(function(value){
                     value.should.not.be.lessThan(previous);
                     previous = value;
                 });
@@ -290,7 +287,7 @@ describe('Elasto', function() {
                 var docs = _.pluck(res.hits.hits, '_source');
                 docs.forEach(function(doc){
                     _.keys(doc).length.should.equal(2);
-                })
+                });
             })
             .should.eventually.notify(done);
         });
@@ -365,6 +362,42 @@ describe('Elasto', function() {
             })
             .should.eventually.notify(done);
 
+        });
+
+        it('should return a search query by default when calling .raw()', function() {
+            var raw = Elasto.query({
+                index: 'circle_test',
+                type: 'tweets'
+            })
+            .fields('name')
+            .from(10)
+            .raw();
+
+            raw.should.be.ok;
+        });
+
+        it('should return a search query when calling .raw() with query', function() {
+            var raw = Elasto.query({
+                index: 'circle_test',
+                type: 'tweets'
+            })
+            .fields('name')
+            .from(10)
+            .raw('query');
+
+            raw.should.be.ok;
+        });
+
+        it('should return a search query by default when calling .raw() with count', function() {
+            var raw = Elasto.query({
+                index: 'circle_test',
+                type: 'tweets'
+            })
+            .fields('name')
+            .from(10)
+            .raw('count');
+
+            raw.should.be.ok;
         });
     });
 });
