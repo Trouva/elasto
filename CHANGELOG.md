@@ -1,3 +1,6 @@
+## 3.0.0 (2015-06-11)
+- Upgrade elasticsearch.js to 5.0.0
+
 ## 2.1.0 (2015-05-27)
 - Included `.jshintrc` file
 - Fixed minor semicolons issues

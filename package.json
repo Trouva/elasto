@@ -1,6 +1,6 @@
 {
   "name": "elasto",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "ElasticSearch client",
   "main": "index",
   "scripts": {
@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "isarray": "0.0.1",
-    "elasticsearch": "^4.0.2"
+    "elasticsearch": "^5.0.0"
   },
   "devDependencies": {
     "bluebird": "^2.9.1",
