@@ -26,7 +26,8 @@ describe('Elasto', function() {
 
         var mapping = {
             'properties': {
-                'location' : { 'type' : 'geo_point' }
+                'location' : { 'type' : 'geo_point' },
+                'embeds': { 'properties': { 'url': { 'type': 'string', "index": "not_analyzed" } } }
             }
         };
 
@@ -105,6 +106,72 @@ describe('Elasto', function() {
                     type: 'tweets'
                 })
                 .where({ name: source.name })
+                .exec();
+            })
+            .then(function(res){
+                var data = res.hits.hits[0]._source;
+                source.id.should.equal(data.id);
+                source.name.should.equal(data.name);
+            })
+            .should.eventually.notify(done);
+        });
+
+        it('should find a document with the alternative where query syntax ("key", "val")', function (done) {
+
+            var source = doc();
+
+            Elasto.client.create({
+                index: 'circle_test',
+                type: 'tweets',
+                refresh: true,
+                id: source.id,
+                body: source
+            })
+            .then(function() {
+                return Elasto.query({
+                    index: 'circle_test',
+                    type: 'tweets'
+                })
+                .where('name', source.name)
+                .exec();
+            })
+            .then(function(res){
+                var data = res.hits.hits[0]._source;
+                source.id.should.equal(data.id);
+                source.name.should.equal(data.name);
+            })
+            .should.eventually.notify(done);
+        });
+
+        it('should find a document with the alternative where query syntax ([{"key": "val"}])', function (done) {
+
+            var source = doc();
+            source.embeds = [
+              {url: 'https://media1.giphy.com/media/xig1JXCmS9xpm/200.gif'},
+              {url: 'https://media1.giphy.com/media/PxFGykZD9QnCw/200.gif'}
+            ];
+
+            Elasto.client.create({
+                index: 'circle_test',
+                type: 'tweets',
+                refresh: true,
+                id: source.id,
+                body: source
+            })
+            .then(function() {
+                var raw = Elasto.query({
+                    index: 'circle_test',
+                    type: 'tweets'
+                })
+                .where([{'embeds.url': source.embeds[0].url}, {'embeds.url': source.embeds[1].url}]).raw()
+
+                raw.body.query.filtered.filter.bool.must.should.have.a.lengthOf(2);
+
+                return Elasto.query({
+                    index: 'circle_test',
+                    type: 'tweets'
+                })
+                .where([{'embeds.url': source.embeds[0].url}, {'embeds.url': source.embeds[1].url}])
                 .exec();
             })
             .then(function(res){
@@ -401,5 +468,3 @@ describe('Elasto', function() {
         });
     });
 });
-
-
