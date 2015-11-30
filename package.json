@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "isarray": "0.0.1",
-    "elasticsearch": "^5.0.0"
+    "elasticsearch": "^10.0.0"
   },
   "devDependencies": {
     "bluebird": "^2.9.1",
