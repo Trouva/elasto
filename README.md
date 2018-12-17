@@ -1,4 +1,7 @@
 # Elasto [![Circle CI](https://circleci.com/gh/StreetHub/elasto.svg?style=svg)](https://circleci.com/gh/StreetHub/elasto)
+
+:warning: This project is currently unmaintained
+
 ## Introduction
 
 Elasto is a simple library to query Elasticsearch.
