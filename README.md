@@ -97,6 +97,23 @@ Elasto.query({
 .where('username', '@jack')
 .exec();
 ```
+### Aggregation
+
+- `.aggregation`
+
+Find documents by aggregation query.
+
+
+```javascript
+Elasto.query({
+    index: 'development',
+    type: 'tweets'
+})
+.aggregation('my_significant_names', 'significant_terms', {
+  'field': 'name'
+})
+.exec();
+```
 
 ### Term
 
@@ -282,7 +299,7 @@ Elasto.query({
     index: 'development',
     type: 'tweets'
 })
-.raw(); 
+.raw();
 // Returns Object
 // -> { index: 'development',
 //  type: 'tweets',
